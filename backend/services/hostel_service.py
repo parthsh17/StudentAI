@@ -40,27 +40,30 @@ class HostelService:
         finally:
             cursor.close()
 
-    def get_hostel_details(self, register_no: str) -> str:
+    def get_hostel_details(self, register_no: str) -> dict:
         cursor = self.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         try:
             cursor.execute(
                 """
-                SELECT h.name as hostel_name, ha.room_number, ha.dues 
+                SELECT h.hostel_id, h.name as hostel_name, ha.room_number, ha.dues 
                 FROM hostel_allocation ha
                 JOIN hostel h ON h.hostel_id = ha.hostel_id
                 WHERE ha.register_no = %s AND (ha.end_date IS NULL OR ha.end_date >= CURRENT_DATE)
                 """,
                 (register_no,)
             )
-            record = cursor.fetchone()
-            if not record:
-                return "You do not have an active hostel allocation."
-            
-            return f"Hostel: {record['hostel_name']} | Room: {record['room_number']} | Pending Dues: ${record['dues'] or 0}"
+            return cursor.fetchone()
         finally:
             cursor.close()
 
-# Adapter functions for the LLM Tool Registry (which passes db_conn via kwargs)
+    def get_all_hostels(self) -> list:
+        cursor = self.db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        try:
+            cursor.execute("SELECT hostel_id, name, type, food, laundry FROM hostel")
+            return [dict(r) for r in cursor.fetchall()]
+        finally:
+            cursor.close()
+
 def get_remaining_days(register_no: str, **kwargs) -> Dict[str, Any]:
     db_conn = kwargs.get("db_conn")
     service = HostelService(db_conn)
@@ -74,4 +77,12 @@ def apply_leave(register_no: str, start_date: str, end_date: str, reason: str = 
 def get_hostel_details(register_no: str, **kwargs) -> Dict[str, Any]:
     db_conn = kwargs.get("db_conn")
     service = HostelService(db_conn)
-    return {"message": service.get_hostel_details(register_no)}
+    record = service.get_hostel_details(register_no)
+    if not record:
+        return {"message": "You do not have an active hostel allocation."}
+    return {"message": f"Hostel: {record['hostel_name']} | Room: {record['room_number']} | Pending Dues: INR {record['dues'] or 0}"}
+
+def get_all_hostels(**kwargs) -> Dict[str, Any]:
+    db_conn = kwargs.get("db_conn")
+    service = HostelService(db_conn)
+    return {"hostels": service.get_all_hostels()}

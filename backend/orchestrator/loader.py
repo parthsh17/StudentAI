@@ -9,7 +9,6 @@ def load_tools_from_db():
     registry = {}
     openai_tools = []
     
-    # Needs a dedicated connection since this configures app state on load
     from backend.core.config import settings
     try:
         conn = psycopg2.connect(
@@ -28,13 +27,11 @@ def load_tools_from_db():
         tools = cursor.fetchall()
         
         for tool in tools:
-            # Map Python functions
             try:
                 module = importlib.import_module(tool["module"])
                 func = getattr(module, tool["function_name"])
                 registry[tool["name"]] = func
                 
-                # Setup OpenAI definition
                 openai_tools.append({
                     "type": "function",
                     "function": {
@@ -54,9 +51,11 @@ def load_tools_from_db():
     return registry, openai_tools
 
 def initialize_tools():
-    global TOOL_REGISTRY, OPENAI_DB_TOOLS
-    TOOL_REGISTRY, OPENAI_DB_TOOLS = load_tools_from_db()
+    registry, openai_tools = load_tools_from_db()
+    TOOL_REGISTRY.clear()
+    TOOL_REGISTRY.update(registry)
+    OPENAI_DB_TOOLS.clear()
+    OPENAI_DB_TOOLS.extend(openai_tools)
 
 def reload_tools():
-    global TOOL_REGISTRY, OPENAI_DB_TOOLS
-    TOOL_REGISTRY, OPENAI_DB_TOOLS = load_tools_from_db()
+    initialize_tools()

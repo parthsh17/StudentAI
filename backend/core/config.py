@@ -1,5 +1,8 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from pathlib import Path
+
+_ENV_FILE = Path(__file__).resolve().parent.parent / ".env"
 
 class Settings(BaseSettings):
     DB_HOST: str = "localhost"
@@ -15,10 +18,13 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ENV: str = "development"
 
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "admin123"
+
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = ""
 
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = ConfigDict(env_file=str(_ENV_FILE), env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()

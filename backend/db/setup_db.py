@@ -14,7 +14,6 @@ def setup_database():
         conn.autocommit = True
         cursor = conn.cursor()
 
-        # Create tool_registry table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS tool_registry (
                 id SERIAL PRIMARY KEY,
@@ -29,7 +28,6 @@ def setup_database():
 
         print("Created tool_registry table if it didn't exist.")
 
-        # Seed initial data
         tools_to_seed = [
             {
                 "name": "hostel_get_remaining_days",
@@ -58,13 +56,6 @@ def setup_database():
                 "module": "backend.services.hostel_service",
                 "function_name": "get_hostel_details",
                 "description": "Get hostel allocation details for the student including hostel name, room number, and pending dues.",
-                "parameters": {"type": "object", "properties": {}}
-            },
-            {
-                "name": "exam_get_next_exam",
-                "module": "backend.services.exam_service",
-                "function_name": "get_next_exam",
-                "description": "Get the next upcoming exam for the student including course name, date, and type.",
                 "parameters": {"type": "object", "properties": {}}
             }
         ]

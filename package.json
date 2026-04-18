@@ -1,0 +1,10 @@
+{
+  "name": "campusai-root",
+  "version": "1.0.0",
+  "description": "Root package.json to run CampusAI frontend and backend concurrently",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "python -m uvicorn backend.main:app --reload",
+    "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  }
+}

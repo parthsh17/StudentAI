@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 
 class LoginRequest(BaseModel):
     register_no: str
@@ -21,3 +21,33 @@ class LeaveResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     query: str
+
+# Admin schemas
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+class ToolCreate(BaseModel):
+    name: str
+    module: str
+    function_name: str
+    description: str
+    parameters: dict = {}
+    active: bool = True
+
+class ToolUpdate(BaseModel):
+    name: str
+    module: str
+    function_name: str
+    description: str
+    parameters: dict = {}
+    active: bool = True
+
+class ToolResponse(BaseModel):
+    id: int
+    name: str
+    module: str
+    function_name: str
+    description: str
+    parameters: Optional[Any] = None
+    active: bool
